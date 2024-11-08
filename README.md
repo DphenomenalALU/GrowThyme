@@ -19,4 +19,3 @@ GrowThyme is a Python-based application developed to assist farmers with timely 
 1. Clone the repository:
    ```bash
    git clone https://github.com/DphenomenalALU/GrowThyme.git
-   cd GrowThyme
