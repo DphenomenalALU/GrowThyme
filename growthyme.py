@@ -32,7 +32,6 @@ def write_to_transcript(crop, planting_months=None, harvesting_months=None, soil
 def introduction():
     intro_text = "Welcome to GrowThyme: Crop Plantation Season!\nThis app provides farmers with guidance on the best planting times to maximize crop yields.\nYou can select from different options in the menu, including entering crop details, viewing seasonal calendars, and more.\n"
     print(intro_text)
-    write_to_transcript("Welcome to GrowThyme: Crop Plantation Season!")
 
 # Validate user-inputted crop name
 def validate_crop(crop_name):
@@ -56,7 +55,6 @@ def select_crop():
         validated_crop = validate_crop(crop_name)
         if validated_crop:
             print(f"You selected: {validated_crop}\n")
-            write_to_transcript(f"Crop Name: {validated_crop}")
             return validated_crop
         else:
             print("Crop not found in our database. Please try again or check the spelling.\n")
@@ -83,20 +81,18 @@ def fetch_seasonal_calendar(crop):
 def seasonal_calendar(crop):
     planting, harvesting = fetch_seasonal_calendar(crop)
     if planting:
-        calendar_info = f"Optimal Planting Months: {planting}\n"
-        print(calendar_info)
-        write_to_transcript(crop, planting_months=planting)
-
+        print(f"Optimal Planting Months: {planting}\n")
+        
         # Ask the user if they'd like to see the harvesting time
         show_harvesting = input(f"Would you like to see the harvesting months for {crop}? (y/n): ").strip().lower()
         if show_harvesting == 'y' and harvesting:
-            harvesting_info = f"Optimal Harvesting Months: {harvesting}\n"
-            print(harvesting_info)
-            write_to_transcript(crop, harvesting_months=harvesting)
-        elif show_harvesting != 'y':
+            print(f"Optimal Harvesting Months: {harvesting}\n")
+        else:
             print("Skipping harvesting months display.\n")
+        return planting, harvesting
     else:
         print(f"Sorry, we don't have seasonal information for {crop}.\n")
+        return None, None
 
 # Fetch soil condition for a crop
 def fetch_soil_conditions(crop):
@@ -117,11 +113,11 @@ def fetch_soil_conditions(crop):
 def soil_condition_guide(crop):
     soil_conditions = fetch_soil_conditions(crop)
     if soil_conditions:
-        soil_info = f"Soil Condition Guide for {crop}: {soil_conditions}\n"
-        print(soil_info)
-        write_to_transcript(crop, soil_conditions=soil_conditions)
+        print(f"Soil Condition Guide for {crop}: {soil_conditions}\n")
+        return soil_conditions
     else:
         print(f"Sorry, we don't have soil condition information for {crop}.\n")
+        return None
 
 # Yield Estimation Function
 def fetch_yield_estimation(crop, planting_date):
@@ -142,16 +138,17 @@ def yield_estimation(crop):
     planting_date = input("Enter your planned planting date (e.g., 2024-03-15): ")
     estimated_yield = fetch_yield_estimation(crop, planting_date)
     if estimated_yield:
-        yield_info = f"Estimated Yield for {crop}: {estimated_yield} based on the planting date {planting_date}.\n"
-        print(yield_info)
-        write_to_transcript(crop, estimated_yield=yield_info)
+        print(f"Estimated Yield for {crop}: {estimated_yield} based on the planting date {planting_date}.\n")
+        return estimated_yield
     else:
         print(f"Sorry, we don't have yield estimation data for {crop}.\n")
+        return None
 
 # Main Menu Function
 def main_menu():
     introduction()
     crop = None
+    planting_months, harvesting_months, soil_conditions, estimated_yield = None, None, None, None
     while True:
         print("\nMain Menu:")
         print("1. Enter Crop Name")
@@ -165,22 +162,24 @@ def main_menu():
                 crop = select_crop()
             elif choice == 2:
                 if crop:
-                    seasonal_calendar(crop)
+                    planting_months, harvesting_months = seasonal_calendar(crop)
                 else:
                     print("Please enter a crop name first.\n")
             elif choice == 3:
                 if crop:
-                    soil_condition_guide(crop)
+                    soil_conditions = soil_condition_guide(crop)
                 else:
                     print("Please enter a crop name first.\n")
             elif choice == 4:
                 if crop:
-                    yield_estimation(crop)
+                    estimated_yield = yield_estimation(crop)
                 else:
                     print("Please enter a crop name first.\n")
             elif choice == 5:
                 print("Thank you for using GrowThyme. Goodbye!")
-                write_to_transcript("Session Ended.\n")
+                # Only write the details to the transcript when everything is collected for the crop
+                if crop:
+                    write_to_transcript(crop, planting_months, harvesting_months, soil_conditions, estimated_yield)
                 break
             else:
                 print("Invalid choice. Please select a valid option.\n")
