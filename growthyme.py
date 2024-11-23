@@ -14,11 +14,16 @@ def get_db_connection():
         print(f"Error connecting to the database: {e}")
         return None
 
+# Function to write to the session transcript
+def write_to_transcript(text):
+    with open("session_transcript.txt", "a") as file:
+        file.write(text + "\n")
+
 # Introduction Function
 def introduction():
-    print("Welcome to GrowThyme: Crop Plantation Season!")
-    print("This app provides farmers with guidance on the best planting times to maximize crop yields.")
-    print("You can select from different options in the menu, including entering crop details, viewing seasonal calendars, and more.\n")
+    intro_text = "Welcome to GrowThyme: Crop Plantation Season!\nThis app provides farmers with guidance on the best planting times to maximize crop yields.\nYou can select from different options in the menu, including entering crop details, viewing seasonal calendars, and more.\n"
+    print(intro_text)
+    write_to_transcript(intro_text)
 
 # Validate user-inputted crop name
 def validate_crop(crop_name):
@@ -42,6 +47,7 @@ def select_crop():
         validated_crop = validate_crop(crop_name)
         if validated_crop:
             print(f"You selected: {validated_crop}\n")
+            write_to_transcript(f"Crop Name: {validated_crop}")
             return validated_crop
         else:
             print("Crop not found in our database. Please try again or check the spelling.\n")
@@ -64,12 +70,22 @@ def fetch_seasonal_calendar(crop):
         if conn:
             conn.close()
 
-# Seasonal Calendar Function
+# Seasonal Calendar Function - Breaking down into Planting and Harvesting
 def seasonal_calendar(crop):
     planting, harvesting = fetch_seasonal_calendar(crop)
-    if planting and harvesting:
-        print(f"Optimal Planting Months for {crop}: {planting}")
-        print(f"Optimal Harvesting Months for {crop}: {harvesting}\n")
+    if planting:
+        calendar_info = f"Optimal Planting Months for {crop}: {planting}\n"
+        print(calendar_info)
+        write_to_transcript(calendar_info)
+
+        # Ask the user if they'd like to see the harvesting time
+        show_harvesting = input(f"Would you like to see the harvesting months for {crop}? (y/n): ").strip().lower()
+        if show_harvesting == 'y' and harvesting:
+            harvesting_info = f"Optimal Harvesting Months for {crop}: {harvesting}\n"
+            print(harvesting_info)
+            write_to_transcript(harvesting_info)
+        elif show_harvesting != 'y':
+            print("Skipping harvesting months display.\n")
     else:
         print(f"Sorry, we don't have seasonal information for {crop}.\n")
 
@@ -92,7 +108,9 @@ def fetch_soil_conditions(crop):
 def soil_condition_guide(crop):
     soil_conditions = fetch_soil_conditions(crop)
     if soil_conditions:
-        print(f"Soil Condition Guide for {crop}: {soil_conditions}\n")
+        soil_info = f"Soil Condition Guide for {crop}: {soil_conditions}\n"
+        print(soil_info)
+        write_to_transcript(soil_info)
     else:
         print(f"Sorry, we don't have soil condition information for {crop}.\n")
 
@@ -115,7 +133,9 @@ def yield_estimation(crop):
     planting_date = input("Enter your planned planting date (e.g., 2024-03-15): ")
     estimated_yield = fetch_yield_estimation(crop, planting_date)
     if estimated_yield:
-        print(f"Estimated Yield for {crop}: {estimated_yield} based on the planting date {planting_date}.\n")
+        yield_info = f"Estimated Yield for {crop}: {estimated_yield} based on the planting date {planting_date}.\n"
+        print(yield_info)
+        write_to_transcript(yield_info)
     else:
         print(f"Sorry, we don't have yield estimation data for {crop}.\n")
 
@@ -151,11 +171,31 @@ def main_menu():
                     print("Please enter a crop name first.\n")
             elif choice == 5:
                 print("Thank you for using GrowThyme. Goodbye!")
+                write_to_transcript("Session Ended.\n")
                 break
             else:
                 print("Invalid choice. Please select a valid option.\n")
         except ValueError:
             print("Invalid input. Please enter a number.\n")
+    
+    # After session ends, ask user if they'd like to download and open the transcript
+    download_transcript()
+
+# Function to allow user to download and open transcript
+def download_transcript():
+    try:
+        with open("session_transcript.txt", "r") as file:
+            transcript_content = file.read()
+            print("Your session transcript has been saved!")
+            print("Would you like to open it now? (y/n)")
+            open_choice = input().strip().lower()
+            if open_choice == "y":
+                print("\nTranscript content:\n")
+                print(transcript_content)
+            else:
+                print("You can open the transcript later at any time.")
+    except FileNotFoundError:
+        print("No transcript found!")
 
 # Run the application
 if __name__ == "__main__":
