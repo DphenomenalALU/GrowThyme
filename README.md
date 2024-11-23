@@ -20,7 +20,8 @@ GrowThyme is a Python-based application developed to assist farmers with timely 
    ```bash
    git clone https://github.com/DphenomenalALU/GrowThyme.git
 2. Install psycopg2
-   ```pip install psycopg2
+   ```bash
+   pip install psycopg2
 3. Running the application:
    ```bash
    python growthyme.py 
