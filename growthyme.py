@@ -96,3 +96,67 @@ def soil_condition_guide(crop):
     else:
         print(f"Sorry, we don't have soil condition information for {crop}.\n")
 
+# Yield Estimation Function
+def fetch_yield_estimation(crop, planting_date):
+    try:
+        conn = get_db_connection()
+        if conn:
+            with conn.cursor(cursor_factory=DictCursor) as cur:
+                cur.execute("SELECT estimated_yield FROM yield_estimations WHERE crop_name = %s;", (crop,))
+                result = cur.fetchone()
+                return result['estimated_yield'] if result else None
+    except Exception as e:
+        print(f"Error fetching yield estimation: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+def yield_estimation(crop):
+    planting_date = input("Enter your planned planting date (e.g., 2024-03-15): ")
+    estimated_yield = fetch_yield_estimation(crop, planting_date)
+    if estimated_yield:
+        print(f"Estimated Yield for {crop}: {estimated_yield} based on the planting date {planting_date}.\n")
+    else:
+        print(f"Sorry, we don't have yield estimation data for {crop}.\n")
+
+# Main Menu Function
+def main_menu():
+    introduction()
+    crop = None
+    while True:
+        print("\nMain Menu:")
+        print("1. Enter Crop Name")
+        print("2. View Seasonal Calendar")
+        print("3. Check Soil Conditions")
+        print("4. Estimate Yield")
+        print("5. Exit")
+        try:
+            choice = int(input("Please choose an option: "))
+            if choice == 1:
+                crop = select_crop()
+            elif choice == 2:
+                if crop:
+                    seasonal_calendar(crop)
+                else:
+                    print("Please enter a crop name first.\n")
+            elif choice == 3:
+                if crop:
+                    soil_condition_guide(crop)
+                else:
+                    print("Please enter a crop name first.\n")
+            elif choice == 4:
+                if crop:
+                    yield_estimation(crop)
+                else:
+                    print("Please enter a crop name first.\n")
+            elif choice == 5:
+                print("Thank you for using GrowThyme. Goodbye!")
+                break
+            else:
+                print("Invalid choice. Please select a valid option.\n")
+        except ValueError:
+            print("Invalid input. Please enter a number.\n")
+
+# Run the application
+if __name__ == "__main__":
+    main_menu()
