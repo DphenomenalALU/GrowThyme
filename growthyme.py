@@ -46,3 +46,53 @@ def select_crop():
         else:
             print("Crop not found in our database. Please try again or check the spelling.\n")
 
+# Fetch seasonal calendar for a crop
+def fetch_seasonal_calendar(crop):
+    try:
+        conn = get_db_connection()
+        if conn:
+            with conn.cursor(cursor_factory=DictCursor) as cur:
+                cur.execute("SELECT planting_months, harvesting_months FROM seasonal_calendar WHERE crop_name = %s;", (crop,))
+                result = cur.fetchone()
+                if result:
+                    return result['planting_months'], result['harvesting_months']
+                else:
+                    return None, None
+    except Exception as e:
+        print(f"Error fetching seasonal calendar: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+# Seasonal Calendar Function
+def seasonal_calendar(crop):
+    planting, harvesting = fetch_seasonal_calendar(crop)
+    if planting and harvesting:
+        print(f"Optimal Planting Months for {crop}: {planting}")
+        print(f"Optimal Harvesting Months for {crop}: {harvesting}\n")
+    else:
+        print(f"Sorry, we don't have seasonal information for {crop}.\n")
+
+# Fetch soil condition for a crop
+def fetch_soil_conditions(crop):
+    try:
+        conn = get_db_connection()
+        if conn:
+            with conn.cursor(cursor_factory=DictCursor) as cur:
+                cur.execute("SELECT soil_conditions FROM soil_guides WHERE crop_name = %s;", (crop,))
+                result = cur.fetchone()
+                return result['soil_conditions'] if result else None
+    except Exception as e:
+        print(f"Error fetching soil conditions: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+# Soil Condition Guide Function
+def soil_condition_guide(crop):
+    soil_conditions = fetch_soil_conditions(crop)
+    if soil_conditions:
+        print(f"Soil Condition Guide for {crop}: {soil_conditions}\n")
+    else:
+        print(f"Sorry, we don't have soil condition information for {crop}.\n")
+
